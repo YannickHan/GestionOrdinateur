@@ -1,0 +1,87 @@
+@page "/reparations"
+@using System.Net
+@using System.Net.Http.Headers
+@using Blazored.SessionStorage
+@inject HttpClient Http
+@inject ISessionStorageService SessionStorage
+
+<PageTitle>Historique des réparations</PageTitle>
+
+<h1>Historique des réparations</h1>
+
+@if (_errorMessage is not null)
+{
+    <div class="alert alert-danger">@_errorMessage</div>
+}
+else if (_historique is null)
+{
+    <p><em>Chargement...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Ordinateur</th>
+                <th>Technicien</th>
+                <th>Type de réparation</th>
+                <th>Date d'intervention</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var intervention in _historique)
+            {
+                <tr>
+                    <td>@intervention.NomOrdinateur</td>
+                    <td>@intervention.Technicien</td>
+                    <td>@intervention.TypeReparation</td>
+                    <td>@intervention.DateIntervention.ToLocalTime()</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IReadOnlyList<HistoriqueReparation>? _historique;
+    private string? _errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            using var request = new HttpRequestMessage(
+                HttpMethod.Get,
+                "http://localhost:5010/api/reparations/historique");
+
+            var token = await SessionStorage.GetItemAsync<string>("authToken");
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                request.Headers.Authorization =
+                    new AuthenticationHeaderValue("Bearer", token);
+            }
+
+            using var response = await Http.SendAsync(request);
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                _errorMessage = "Vous devez être connecté pour voir l'historique.";
+                return;
+            }
+
+            response.EnsureSuccessStatusCode();
+            _historique = await response.Content
+                .ReadFromJsonAsync<List<HistoriqueReparation>>();
+        }
+        catch (HttpRequestException)
+        {
+            _errorMessage = "Impossible de charger l'historique des réparations.";
+        }
+    }
+
+    private sealed record HistoriqueReparation(
+        int OrdinateurId,
+        string NomOrdinateur,
+        string Technicien,
+        string TypeReparation,
+        DateTime DateIntervention);
+}

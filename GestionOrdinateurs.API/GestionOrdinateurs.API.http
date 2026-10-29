@@ -1,0 +1,27 @@
+@GestionOrdinateurs.API_HostAddress = http://localhost:5210
+
+GET {{GestionOrdinateurs.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
+
+### Ajouter un ordinateur
+POST {{GestionOrdinateurs.API_HostAddress}}/api/Ordinateurs?id=1&nom=Dell%20XPS&marque=Dell&ramGo=16&stockageGo=512&typeOrdi=Portable&processeur=Intel%20i5&etat=EnService&prix=999&stock=2
+
+### Consulter le diagnostic
+GET {{GestionOrdinateurs.API_HostAddress}}/api/Ordinateurs/1/diagnostic
+
+### Consulter les statistiques
+GET {{GestionOrdinateurs.API_HostAddress}}/api/Ordinateurs/statistiques
+
+### Chercher un ordinateur par nom dans l'inventaire
+GET {{GestionOrdinateurs.API_HostAddress}}/api/Ordinateurs/inventaire/Dell%20XPS
+
+### Consulter l'historique des réparations
+GET {{GestionOrdinateurs.API_HostAddress}}/api/reparations/historique
+
+### Créer trois réparations simulées
+POST {{GestionOrdinateurs.API_HostAddress}}/api/reparations/simuler
+
+### Consulter toutes les réparations
+GET {{GestionOrdinateurs.API_HostAddress}}/api/reparations

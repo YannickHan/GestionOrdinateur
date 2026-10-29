@@ -1,0 +1,58 @@
+@page "/ordinateurs"
+@using GestionOrdinateurs.Shared
+@inject HttpClient Http
+
+<PageTitle>Ordinateurs</PageTitle>
+
+<h1>Ordinateurs</h1>
+
+@if (_errorMessage is not null)
+{
+    <div class="alert alert-danger">@_errorMessage</div>
+}
+else if (_ordinateurs is null)
+{
+    <p><em>Chargement...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Prix</th>
+                <th>Devise</th>
+                <th>Vendu</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var ordinateur in _ordinateurs)
+            {
+                <tr>
+                    <td>@ordinateur.Nom</td>
+                    <td>@ordinateur.Prix.ToString("F2")</td>
+                    <td>EUR</td>
+                    <td>@(ordinateur.Vendu ? "Oui" : "Non")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IReadOnlyList<Ordinateur>? _ordinateurs;
+    private string? _errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _ordinateurs = await Http.GetFromJsonAsync<List<Ordinateur>>(
+                "http://localhost:5010/api/Ordinateurs");
+        }
+        catch (HttpRequestException)
+        {
+            _errorMessage = "Impossible de charger les ordinateurs.";
+        }
+    }
+}

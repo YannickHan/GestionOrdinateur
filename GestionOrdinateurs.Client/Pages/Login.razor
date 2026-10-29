@@ -1,0 +1,88 @@
+@page "/login"
+
+@inject Blazored.SessionStorage.ISessionStorageService SessionStorage
+@inject NavigationManager Navigation
+@inject JwtAuthenticationStateProvider AuthProvider
+@inject HttpClient Http
+
+<PageTitle>Connexion</PageTitle>
+
+<h1>Connexion</h1>
+
+<div class="mb-3">
+    <label for="login" class="form-label">Login</label>
+    <InputText id="login" @bind-Value="_login" class="form-control" />
+</div>
+
+<button type="button"
+        class="btn btn-primary"
+        @onclick="LoginAsync"
+        disabled="@_isLoading">
+    @(_isLoading ? "Connexion..." : "Se connecter")
+</button>
+
+@if (_errorMessage is not null)
+{
+    <div class="alert alert-danger mt-3">@_errorMessage</div>
+}
+
+@code
+{
+    private string _login = string.Empty;
+    private bool _isLoading;
+    private string? _errorMessage;
+
+    private async Task LoginAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_login))
+        {
+            _errorMessage = "Le login est obligatoire.";
+            return;
+        }
+
+        _isLoading = true;
+        _errorMessage = null;
+
+        try
+        {
+            using var response = await Http.PostAsJsonAsync(
+                "http://localhost:5114/auth/login",
+                new LoginRequest(_login));
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _errorMessage = response.StatusCode ==
+                    System.Net.HttpStatusCode.Unauthorized
+                    ? "Ce login n'existe pas."
+                    : "Une erreur est survenue pendant la connexion.";
+                return;
+            }
+
+            var result = await response.Content
+                .ReadFromJsonAsync<LoginResponse>();
+
+            if (result is null || string.IsNullOrWhiteSpace(result.Token))
+            {
+                _errorMessage = "Le token reçu est invalide.";
+                return;
+            }
+
+            await SessionStorage.SetItemAsync("authToken", result.Token);
+            AuthProvider.NotifyUserAuthentication(result.Token);
+            Navigation.NavigateTo("/ordinateurs");
+        }
+        catch (HttpRequestException)
+        {
+            _errorMessage =
+                "Impossible de contacter le service d'authentification.";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private sealed record LoginRequest(string Login);
+
+    private sealed record LoginResponse(string Token, DateTime ExpiresAt);
+}
