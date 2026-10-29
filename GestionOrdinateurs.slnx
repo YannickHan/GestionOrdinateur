@@ -4,5 +4,5 @@
   <Project Path="GestionOrdinateurs.Tests/GestionOrdinateurs.Tests.csproj" />
   <Project Path="GestionOrdinateurs.Client/GestionOrdinateurs.Client.csproj" />
   <Project Path="GestionOrdinateurs.Gateway/GestionOrdinateurs.Gateway.csproj" />
-  <Project Path="Authentification/Authentification.csproj" />
+  <Project Path="AuthentificationApi/AuthentificationApi.csproj" />
 </Solution>
