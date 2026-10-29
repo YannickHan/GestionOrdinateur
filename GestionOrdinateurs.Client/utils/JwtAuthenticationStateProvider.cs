@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Text.Json;
 using Blazored.SessionStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 
@@ -65,13 +66,26 @@ public class JwtAuthenticationStateProvider : AuthenticationStateProvider
 
         foreach (var claim in token.Claims)
         {
-            if (claim.Type == "role")
+            if (claim.Type == "realm_access")
+            {
+                using var realmAccess = JsonDocument.Parse(claim.Value);
+                if (realmAccess.RootElement.TryGetProperty("roles", out var roles))
+                {
+                    foreach (var role in roles.EnumerateArray())
+                    {
+                        claims.Add(new Claim(
+                            ClaimTypes.Role,
+                            role.GetString() ?? string.Empty));
+                    }
+                }
+            }
+            else if (claim.Type is "role" or ClaimTypes.Role)
             {
                 claims.Add(new Claim(
                     ClaimTypes.Role,
                     claim.Value));
             }
-            else if (claim.Type == "unique_name")
+            else if (claim.Type is "unique_name" or "preferred_username")
             {
                 claims.Add(new Claim(
                     ClaimTypes.Name,

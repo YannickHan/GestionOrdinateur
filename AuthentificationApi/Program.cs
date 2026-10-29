@@ -25,6 +25,12 @@ builder.Services.AddHttpClient("UsersApi", client =>
     client.DefaultRequestHeaders.Accept.Add(
         new MediaTypeWithQualityHeaderValue("application/json"));
 });
+builder.Services.AddHttpClient("Keycloak", client =>
+{
+    client.BaseAddress = new Uri(
+        builder.Configuration["Keycloak:BaseUrl"]
+        ?? "http://keycloak:8080/");
+});
 
 var app = builder.Build();
 

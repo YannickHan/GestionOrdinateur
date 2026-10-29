@@ -6,6 +6,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.Net;
+using System.Net.Http.Json;
 
 [ApiController]
 [Route("auth")]
@@ -73,6 +74,58 @@ public sealed class AuthenticationController : ControllerBase
         });
     }
 
+    [HttpPost("keycloak/login")]
+    public async Task<IActionResult> KeycloakLogin(
+        [FromBody] KeycloakLoginRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(request.Username) ||
+            string.IsNullOrWhiteSpace(request.Password))
+        {
+            return BadRequest("L'utilisateur et le mot de passe sont obligatoires.");
+        }
+
+        var clientId = _configuration["Keycloak:ClientId"] ?? "gestion-ordinateurs-client";
+        var realm = _configuration["Keycloak:Realm"] ?? "gestion-ordinateurs";
+        var clientSecret = _configuration["Keycloak:ClientSecret"];
+        var form = new Dictionary<string, string>
+        {
+            ["grant_type"] = "password",
+            ["client_id"] = clientId,
+            ["username"] = request.Username,
+            ["password"] = request.Password
+        };
+
+        if (!string.IsNullOrWhiteSpace(clientSecret))
+        {
+            form["client_secret"] = clientSecret;
+        }
+
+        var keycloakClient = _httpClientFactory.CreateClient("Keycloak");
+        using var response = await keycloakClient.PostAsync(
+            $"realms/{realm}/protocol/openid-connect/token",
+            new FormUrlEncodedContent(form),
+            cancellationToken);
+
+        if (response.StatusCode == HttpStatusCode.BadRequest ||
+            response.StatusCode == HttpStatusCode.Unauthorized)
+        {
+            return Unauthorized("Utilisateur ou mot de passe incorrect.");
+        }
+
+        if (!response.IsSuccessStatusCode)
+        {
+            return StatusCode(StatusCodes.Status502BadGateway,
+                "Le service Keycloak est indisponible.");
+        }
+
+        var token = await response.Content.ReadFromJsonAsync<KeycloakTokenResponse>(
+            cancellationToken);
+        return token is null
+            ? StatusCode(StatusCodes.Status502BadGateway, "La réponse Keycloak est invalide.")
+            : Ok(token);
+    }
+
     private string GenTokenJWT(byte[] keyP, UserInfo user)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
@@ -95,5 +148,13 @@ public sealed class AuthenticationController : ControllerBase
 }
 
 public sealed record LoginRequest(string Login);
+
+public sealed record KeycloakLoginRequest(string Username, string Password);
+
+internal sealed record KeycloakTokenResponse(
+    [property: System.Text.Json.Serialization.JsonPropertyName("access_token")]
+    string AccessToken,
+    [property: System.Text.Json.Serialization.JsonPropertyName("expires_in")]
+    int ExpiresIn);
 
 internal sealed record UserInfo(int Id, string Login, string Role);

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GestionOrdinateurs.Gateway")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+69b149002f35a0cdda397a146aca987e5f35ab51")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+35a70e77fa08a19ca82f16c1471373ab4fe294a5")]
 [assembly: System.Reflection.AssemblyProductAttribute("GestionOrdinateurs.Gateway")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GestionOrdinateurs.Gateway")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

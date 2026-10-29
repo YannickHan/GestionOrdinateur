@@ -40,7 +40,7 @@ public sealed class ReparationController : ControllerBase
 
     // Affiche les réparations avec les informations des ordinateurs associés.
     [HttpGet]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> GetReparations()
     {
         IReadOnlyList<Reparation> reparations =
@@ -50,7 +50,7 @@ public sealed class ReparationController : ControllerBase
     }
 
     [HttpGet("historique")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> GetHistorique()
     {
         IReadOnlyList<HistoriqueReparationRecord> historique =

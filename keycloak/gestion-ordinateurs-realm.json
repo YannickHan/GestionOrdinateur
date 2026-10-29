@@ -1,0 +1,56 @@
+{
+  "realm": "gestion-ordinateurs",
+  "enabled": true,
+  "registrationAllowed": false,
+  "roles": {
+    "realm": [
+      {
+        "name": "admin",
+        "description": "Accès à la gestion des réparations"
+      },
+      {
+        "name": "Gestionnaire",
+        "description": "Accès à la gestion courante des ordinateurs"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "gestion-ordinateurs-client",
+      "name": "GestionOrdinateurs Client",
+      "enabled": true,
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "gestion-ordinateurs-client-secret",
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": [
+        "http://localhost:5000/*",
+        "http://localhost:5170/*"
+      ],
+      "webOrigins": [
+        "http://localhost:5000",
+        "http://localhost:5170"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "admin",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin",
+          "temporary": false
+        }
+      ],
+      "requiredActions": [],
+      "realmRoles": [
+        "admin"
+      ]
+    }
+  ]
+}

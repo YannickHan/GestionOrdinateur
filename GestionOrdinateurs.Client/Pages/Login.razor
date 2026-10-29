@@ -10,8 +10,13 @@
 <h1>Connexion</h1>
 
 <div class="mb-3">
-    <label for="login" class="form-label">Login</label>
-    <InputText id="login" @bind-Value="_login" class="form-control" />
+    <label for="username" class="form-label">Utilisateur</label>
+    <InputText id="username" @bind-Value="_username" class="form-control" />
+</div>
+
+<div class="mb-3">
+    <label for="password" class="form-label">Mot de passe</label>
+    <InputText id="password" type="password" @bind-Value="_password" class="form-control" />
 </div>
 
 <button type="button"
@@ -28,15 +33,17 @@
 
 @code
 {
-    private string _login = string.Empty;
+    private string _username = string.Empty;
+    private string _password = string.Empty;
     private bool _isLoading;
     private string? _errorMessage;
 
     private async Task LoginAsync()
     {
-        if (string.IsNullOrWhiteSpace(_login))
+        if (string.IsNullOrWhiteSpace(_username) ||
+            string.IsNullOrWhiteSpace(_password))
         {
-            _errorMessage = "Le login est obligatoire.";
+            _errorMessage = "L'utilisateur et le mot de passe sont obligatoires.";
             return;
         }
 
@@ -46,14 +53,14 @@
         try
         {
             using var response = await Http.PostAsJsonAsync(
-                "http://localhost:5114/auth/login",
-                new LoginRequest(_login));
+                "http://localhost:5114/auth/keycloak/login",
+                new KeycloakLoginRequest(_username, _password));
 
             if (!response.IsSuccessStatusCode)
             {
                 _errorMessage = response.StatusCode ==
                     System.Net.HttpStatusCode.Unauthorized
-                    ? "Ce login n'existe pas."
+                    ? "Utilisateur ou mot de passe incorrect."
                     : "Une erreur est survenue pendant la connexion.";
                 return;
             }
@@ -61,14 +68,14 @@
             var result = await response.Content
                 .ReadFromJsonAsync<LoginResponse>();
 
-            if (result is null || string.IsNullOrWhiteSpace(result.Token))
+            if (result is null || string.IsNullOrWhiteSpace(result.AccessToken))
             {
                 _errorMessage = "Le token reçu est invalide.";
                 return;
             }
 
-            await SessionStorage.SetItemAsync("authToken", result.Token);
-            AuthProvider.NotifyUserAuthentication(result.Token);
+            await SessionStorage.SetItemAsync("authToken", result.AccessToken);
+            AuthProvider.NotifyUserAuthentication(result.AccessToken);
             Navigation.NavigateTo("/ordinateurs");
         }
         catch (HttpRequestException)
@@ -82,7 +89,11 @@
         }
     }
 
-    private sealed record LoginRequest(string Login);
+    private sealed record KeycloakLoginRequest(string Username, string Password);
 
-    private sealed record LoginResponse(string Token, DateTime ExpiresAt);
+    private sealed record LoginResponse(
+        [property: System.Text.Json.Serialization.JsonPropertyName("access_token")]
+        string AccessToken,
+        [property: System.Text.Json.Serialization.JsonPropertyName("expires_in")]
+        int ExpiresIn);
 }
