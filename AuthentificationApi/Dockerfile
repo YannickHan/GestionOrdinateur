@@ -12,14 +12,13 @@ COPY GestionOrdinateurs.Shared/ GestionOrdinateurs.Shared/
 
 RUN dotnet publish AuthentificationApi/AuthentificationApi.csproj \
     -c Release \
-    -o /app/publish \
-    --no-restore
+    -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 
 COPY --from=build /app/publish .
 
-EXPOSE 8080
+EXPOSE 5114
 
 ENTRYPOINT ["dotnet", "AuthentificationApi.dll"]

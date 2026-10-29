@@ -11,7 +11,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowBlazorClient", policy =>
     {
-        policy.WithOrigins("http://localhost:5170", "https://localhost:7290")
+        policy.WithOrigins("http://localhost:5000", "http://localhost:5170", "https://localhost:7290")
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -21,7 +21,7 @@ builder.Services.AddHttpClient("UsersApi", client =>
 {
     client.BaseAddress = new Uri(
         builder.Configuration["UsersApi:BaseUrl"]
-        ?? "http://localhost:5210/");
+        ?? "http://gestion-ordinateurs-api:5210/");
     client.DefaultRequestHeaders.Accept.Add(
         new MediaTypeWithQualityHeaderValue("application/json"));
 });

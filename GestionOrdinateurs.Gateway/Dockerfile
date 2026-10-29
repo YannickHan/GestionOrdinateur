@@ -10,14 +10,13 @@ COPY GestionOrdinateurs.Gateway/ GestionOrdinateurs.Gateway/
 
 RUN dotnet publish GestionOrdinateurs.Gateway/GestionOrdinateurs.Gateway.csproj \
     -c Release \
-    -o /app/publish \
-    --no-restore
+    -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 
 COPY --from=build /app/publish .
 
-EXPOSE 8080
+EXPOSE 5010
 
 ENTRYPOINT ["dotnet", "GestionOrdinateurs.Gateway.dll"]

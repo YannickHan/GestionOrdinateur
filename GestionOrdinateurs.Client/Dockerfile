@@ -12,13 +12,12 @@ COPY GestionOrdinateurs.Shared/ GestionOrdinateurs.Shared/
 
 RUN dotnet publish GestionOrdinateurs.Client/GestionOrdinateurs.Client.csproj \
     -c Release \
-    -o /app/publish \
-    --no-restore
+    -o /app/publish
 
 FROM nginx:alpine AS final
 COPY --from=build /app/publish/wwwroot /usr/share/nginx/html
 COPY .github/workflows/nginx.conf /etc/nginx/conf.d/default.conf
 
-EXPOSE 80
+EXPOSE 5000
 
 ENTRYPOINT ["nginx", "-g", "daemon off;"]
